@@ -12,6 +12,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface WNCarouselCustomizeView : UIView
 
+//传入图片数组
+@property (nonatomic, copy) NSArray *imagesArray;
+
 @end
 
 NS_ASSUME_NONNULL_END
