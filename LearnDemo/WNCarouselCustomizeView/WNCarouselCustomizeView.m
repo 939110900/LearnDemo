@@ -34,7 +34,7 @@
 
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
-        self = [[WNCarouselCustomizeView alloc] initWithFrame:frame];
+        
         self.showIndex = 0;
     }
     return self;
@@ -50,6 +50,8 @@
     
     self.baseScrollView.contentSize = CGSizeMake(width * 3, height);
     
+    [self addSubview:self.baseScrollView];
+    
     [self.baseScrollView addSubview:self.firstButton];
     [self.baseScrollView addSubview:self.secondButton];
     [self.baseScrollView addSubview:self.thirdButton];
@@ -64,11 +66,106 @@
 - (void)setImagesArray:(NSArray *)imagesArray {
     _imagesArray = imagesArray;
     
-    //设置图片显示内容
-    [self setContent];
+    
+    [self contentSetImage];
+    
     //开启定时器
 //    [self startTimer];
     
+}
+
+- (void)contentSetImage {
+    if(!self.imagesArray || self.imagesArray.count == 0) {
+        return;
+    }
+    //设置图片显示内容
+    if(self.showIndex <= 0) {
+        [self.firstButton setImage:self.imagesArray[self.imagesArray.count - 1] forState:UIControlStateNormal];
+        
+    }else {
+        [self.firstButton setImage:self.imagesArray[self.showIndex - 1] forState:UIControlStateNormal];
+    }
+    [self.secondButton setImage:self.imagesArray[self.showIndex] forState:UIControlStateNormal];
+    if(self.showIndex >= self.imagesArray.count - 1) {
+        [self.thirdButton setImage:self.imagesArray[0] forState:UIControlStateNormal];
+    }else {
+        [self.thirdButton setImage:self.imagesArray[self.showIndex + 1] forState:UIControlStateNormal];
+    }
+}
+
+//状态改变之后更新显示内容
+- (void)updateContent {
+    CGFloat width = self.bounds.size.width;
+    [self contentSetImage];
+    //唯一跟设置显示内容不同的就是重新设置偏移量，让它永远用中间的按钮显示图片,滑动之后就偷偷的把偏移位置设置回去，这样就实现了永远用中间的按钮显示图片
+    //设置偏移量在中间
+    self.baseScrollView.contentOffset = CGPointMake(width, 0);
+}
+
+#pragma mark - UIScrollViewDelegate
+//拖拽的时候执行哪些操作
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    //拖动的时候，哪张图片最靠中间，也就是偏移量最小，就滑到哪页
+    //用来设置当前页
+    //遍历三个imageView,看那个图片偏移最小，也就是最靠中间
+    
+    
+}
+//开始拖拽的时候停止计时器
+- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
+}
+//结束拖拽的时候开始定时器
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
+}
+//结束拖拽的时候更新image内容
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView
+{
+    CGFloat distanceFirst = ABS(self.firstButton.frame.origin.x - scrollView.contentOffset.x);
+    CGFloat distanceSecond = ABS(self.secondButton.frame.origin.x - scrollView.contentOffset.x);
+    CGFloat distanceThird = ABS(self.thirdButton.frame.origin.x - scrollView.contentOffset.x);
+    if(distanceFirst <= distanceSecond && distanceFirst <= distanceThird) {
+        if(self.showIndex <= 0){
+            self.showIndex = self.imagesArray.count - 1;
+        }else {
+            self.showIndex = self.showIndex - 1;
+        }
+        
+    }else if(distanceSecond <= distanceFirst && distanceSecond <= distanceThird) {
+        
+    }else {
+        if(self.showIndex >= self.imagesArray.count - 1){
+            self.showIndex = 0;
+        }else {
+            self.showIndex = self.showIndex + 1;
+        }
+        
+    }
+    [self updateContent];
+}
+//scroll滚动动画结束的时候更新image内容
+- (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView
+{
+//    CGFloat distanceFirst = ABS(self.firstButton.frame.origin.x - scrollView.contentOffset.x);
+//    CGFloat distanceSecond = ABS(self.secondButton.frame.origin.x - scrollView.contentOffset.x);
+//    CGFloat distanceThird = ABS(self.thirdButton.frame.origin.x - scrollView.contentOffset.x);
+//    if(distanceFirst <= distanceSecond && distanceFirst <= distanceThird) {
+//        if(self.showIndex == 0){
+//            self.showIndex = self.imagesArray.count - 1;
+//        }else {
+//            self.showIndex = self.showIndex - 1;
+//        }
+//
+//    }else if(distanceSecond <= distanceFirst && distanceSecond <= distanceThird) {
+//
+//    }else {
+//        if(self.showIndex == self.imagesArray.count - 1){
+//            self.showIndex = 0;
+//        }else {
+//            self.showIndex = self.showIndex + 1;
+//        }
+//
+//    }
+//    [self updateContent];
 }
 
 
@@ -90,6 +187,8 @@
 - (UIButton *)firstButton {
     if(!_firstButton) {
         _firstButton = [[UIButton alloc] init];
+//        _firstButton.backgroundColor = [UIColor greenColor];
+        
     }
     return _firstButton;
 }
@@ -97,6 +196,7 @@
 - (UIButton *)secondButton {
     if(!_secondButton) {
         _secondButton = [[UIButton alloc] init];
+//        _secondButton.backgroundColor = [UIColor blueColor];
     }
     return _secondButton;
 }
@@ -104,6 +204,7 @@
 - (UIButton *)thirdButton {
     if(!_thirdButton) {
         _thirdButton = [[UIButton alloc] init];
+//        _thirdButton.backgroundColor = [UIColor blackColor];
     }
     return _thirdButton;
 }
